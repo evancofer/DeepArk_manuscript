@@ -1,0 +1,4 @@
+[submodule "DeepArk"]
+	path = DeepArk
+	url = https://github.com/FunctionLab/DeepArk.git
+	branch = master
