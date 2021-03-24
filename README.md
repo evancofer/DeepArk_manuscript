@@ -1,4 +1,6 @@
-# DeepArk Reproduction Code
+# DeepArk Manuscript Code
+![logo](DeepArk/data/deepark_logo.png)
+
 ---
 
 ## Contents
