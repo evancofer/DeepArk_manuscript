@@ -1,5 +1,5 @@
 # DeepArk Manuscript Code
-![logo](DeepArk/data/deepark_logo.png)
+![logo](deepark_logo.png)
 
 ---
 
