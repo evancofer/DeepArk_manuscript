@@ -7,7 +7,8 @@
 1. [What is DeepArk?](#what_is_deepark)
 2. [What is this repository for?](#what_is_this)
 3. [Setup and installation](#setup)
-4. [Downloading weights without training new models](#download_weights)
+4. [Training new models](#train_models)
+5. [Downloading weights without training new models](#download_weights)
 
 ## <a name="what_is_deepark"></a>What is DeepArk?
 DeepArk is a set of models of the worm, fish, fly, and mouse regulatory codes.
@@ -41,6 +42,23 @@ Please ensure you have [Anaconda](https://www.anaconda.com/) installed, and then
 conda env create -f environment.yml
 conda activate DeepArk_manuscript
 ```
+
+Finally, you will need to download all data associated with the manuscript.
+This can be accomplished with the following command:
+
+```
+./download_data.sh
+```
+
+## <a name="train_models"></a>Training new models
+
+For example, to train a new model for mouse, you would run the following commands:
+
+```
+cd 'train'
+./train.sh 'mus_musculus'
+```
+
 
 ## <a name="download_weights"></a>Downloading weights without training new models
 
