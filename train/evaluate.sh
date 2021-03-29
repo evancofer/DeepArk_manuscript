@@ -50,7 +50,7 @@ if [ $? != 0 ]; then
     exit 1
 fi
 
-python -u '../selene/selene_cli.py' 'train.'"${SPECIES}"'.yml' --lr="${LR}"
+python -u '../selene/selene_cli.py' 'evaluate.'"${SPECIES}"'.yml' --lr="${LR}"
 if [ $? != 0 ]; then
     echo 'Failed to run selene command!'
     exit 1

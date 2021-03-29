@@ -8,7 +8,8 @@
 2. [What is this repository for?](#what_is_this)
 3. [Setup and installation](#setup)
 4. [Training new models](#train_models)
-5. [Downloading weights without training new models](#download_weights)
+5. [Testing models](#test_models)
+6. [Downloading weights without training new models](#download_weights)
 
 ## <a name="what_is_deepark"></a>What is DeepArk?
 DeepArk is a set of models of the worm, fish, fly, and mouse regulatory codes.
@@ -74,6 +75,18 @@ For example, to train a new model for mouse, you would run the following command
 cd 'train'
 ./train.sh 'mus_musculus'
 ```
+
+## <a name="test_models"></a>Testing models
+To test models, simply run the following script:
+
+```
+cd 'train'
+./evaluate.sh 'mus_musculus'
+```
+
+Note that this will only use the pre-trained models we provide.
+If you want to test models using a different set of weights (e.g. the ones you learned during training), you need to change the configuration YML.
+In the above case (i.e. for mouse), you would change the `checkpoint_resume` value in `train/evaluate.mus_musculus.yml` to point to the weights you learned.
 
 
 ## <a name="download_weights"></a>Downloading weights without training new models

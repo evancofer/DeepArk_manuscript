@@ -1,5 +1,5 @@
 ---
-ops: [train]
+ops: [train, evaluate]
 model: {
     path: model.mus_musculus.py,
     class: DeepArkModel,

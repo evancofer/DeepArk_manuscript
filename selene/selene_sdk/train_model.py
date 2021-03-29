@@ -272,9 +272,11 @@ class TrainModel(object):
 
             self.model = load_model_from_state_dict(
                 checkpoint["state_dict"], self.model)
-            self._min_loss = checkpoint["min_loss"]
-            self.optimizer.load_state_dict(
-                checkpoint["optimizer"])
+            if "min_loss" in checkpoint:
+                self._min_loss = checkpoint["min_loss"]
+            if "optimizer" in checkpoint:
+                self.optimizer.load_state_dict(
+                    checkpoint["optimizer"])
             if self.use_cuda:
                 for state in self.optimizer.state.values():
                     for k, v in state.items():
@@ -635,7 +637,7 @@ class TrainModel(object):
 
         output_file = os.path.join(self.output_dir, "test_targets_and_preds.h5")
         with h5py.File(output_file, 'w') as fh:
-            fh.create_dataset("targets", data=self._all_test_targets.todense())
+            fh.create_dataset("targets", data=self._all_test_targets)
             fh.create_dataset("preds", data=all_predictions)
 
         average_scores["loss"] = average_loss

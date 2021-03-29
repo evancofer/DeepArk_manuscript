@@ -1,5 +1,5 @@
 ---
-ops: [train]
+ops: [train, evaluate]
 model: {
     path: model.danio_rerio.py,
     class: DeepArkModel,
@@ -63,7 +63,7 @@ train_model: !obj:selene_sdk.TrainModel {
     logging_verbosity: 2,
     cpu_n_threads: 19,
     n_test_samples: 1000000,
-    report_gt_feature_n_positives: 5,
+    report_gt_feature_n_positives: 50,
     disable_scheduler: False,
     checkpoint_resume: ../DeepArk/data/danio_rerio.pth.tar
 }

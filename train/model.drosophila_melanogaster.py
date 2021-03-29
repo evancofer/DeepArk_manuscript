@@ -113,14 +113,13 @@ class DeepArkModel(torch.nn.Module):
         The convolutional network.
         
     """
-    def __init__(self, sequence_length, n_features, dropout):
+    def __init__(self, sequence_length, n_features, dropout, channels=[160, 320, 480, 560, 720]):
         super(DeepArkModel, self).__init__()
         self.n_features = n_features
         self.sequence_length = sequence_length
 
         # Dropout params.
         block_count = 5
-        channels = [160, 320, 480, 560, 720]
         self.network = torch.nn.Sequential(
             ## Block 1.
             torch.nn.BatchNorm1d(4),
