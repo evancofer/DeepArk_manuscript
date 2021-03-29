@@ -1,0 +1,28 @@
+---
+sampler: !obj:selene_sdk.samplers.RandomPositionsSampler {
+    target_path: ../data/dm3.sorted_data.all.bed.gz,
+    reference_sequence: !obj:selene_sdk.sequences.Genome {
+        input_path: ../data/dm3.fa,
+        blacklist_regions: ../data/dm3.blacklist.bed.gz
+    },
+    features: !obj:selene_sdk.utils.load_features_list {
+        input_path: distinct_features.drosophila_melanogaster.txt
+    },
+    output_dir: ./,
+    test_holdout: [chr2L, chr2LHet, chrM],
+    validation_holdout: [chrR, chr2RHet],
+    seed: 1337,
+    sequence_length: 4095,
+    step_size: 1,
+    bins_start:  2047,
+    bins_end: 2048,
+    bin_size: 1,
+    mode: validate,
+    feature_thresholds: 1,
+}
+batch_size: 64
+n_features: 1552
+output_dir: ../data
+random_seed: 1337
+create_subdirectory: False
+...
