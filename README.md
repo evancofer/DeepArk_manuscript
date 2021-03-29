@@ -43,6 +43,18 @@ conda env create -f environment.yml
 conda activate DeepArk_manuscript
 ```
 
+The training portion of the manuscript uses a different version of Selene than the rest of the manuscript.
+This version of Selene has been packaged with this repository for reproducibility purposes.
+To create the training environment, please run the following commands:
+
+```
+conda env create -f train_environment.yml
+conda activate DeepArk_manuscript_train
+cd selene
+python setup.py build_ext --inplace
+pip install -e .
+```
+
 Finally, you will need to download all data associated with the manuscript.
 This can be accomplished with the following command:
 

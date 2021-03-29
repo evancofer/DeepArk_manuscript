@@ -42,7 +42,7 @@ if [ ! -e 'outputs/'"${SPECIES}" ]; then
     fi
 fi
 
-conda activate DeepArk_manuscript
+conda activate DeepArk_manuscript_train
 if [ $? != 0 ]; then
     echo 'Failed to activate conda environment.'
     exit 1
