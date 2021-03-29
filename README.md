@@ -43,7 +43,8 @@ conda env create -f environment.yml
 conda activate DeepArk_manuscript
 ```
 
-The training portion of the manuscript uses a different version of Selene than the rest of the manuscript.
+The training portion of the manuscript (as well as some data generation steps) uses a different version of Selene than the rest of the manuscript.
+This is because it uses some additional functionality that was never fully released with Selene.
 This version of Selene has been packaged with this repository for reproducibility purposes.
 To create the training environment, please run the following commands:
 
@@ -64,6 +65,9 @@ This can be accomplished with the following command:
 
 ## <a name="train_models"></a>Training new models
 
+Training a new model simply requires the use of the `train.sh` script in the `train` directory.
+The only argument that this script requires is the species you would like to train a new model for.
+The `train.sh` script should be run only within the `train` directory, or it will not function properly.
 For example, to train a new model for mouse, you would run the following commands:
 
 ```

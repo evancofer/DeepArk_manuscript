@@ -47,7 +47,7 @@ for URL in "${GENOME_URLS[@]}"; do
 done
 
 # Download genome blacklists.
-declare -a BLACKLIST_URLS=('https://github.com/Boyle-Lab/Blacklist/raw/master/lists/dm3-blacklist.v2.bed.gz' 'https://github.com/Boyle-Lab/Blacklist/raw/master/lists/ce10-blacklist.v2.bed.gz' 'https://github.com/Boyle-Lab/Blacklist/raw/master/lists/mm9-blacklist.v2.bed.gz')
+declare -a BLACKLIST_URLS=('https://github.com/Boyle-Lab/Blacklist/raw/master/lists/dm3-blacklist.v2.bed.gz' 'https://github.com/Boyle-Lab/Blacklist/raw/master/lists/ce10-blacklist.v2.bed.gz' 'https://github.com/Boyle-Lab/Blacklist/raw/master/lists/mm10-blacklist.v2.bed.gz')
 
 for URL in "${BLACKLIST_URLS[@]}"; do
     echo "Downloading: $URL"
@@ -90,12 +90,88 @@ for URL in "${BLACKLIST_URLS[@]}"; do
             exit 1
         fi
     fi
+    if [ "${GENOME}" == 'mm10' ]; then
+        gunzip -c "${LOCAL_FINAL_FILE}" >'mm10_prelift.bed'
+        if [ $? != 0 ]; then
+            echo 'Failed to create prelift file for mm10'
+            exit 1
+        fi
+        # Download chain file.
+        if [ ! -e 'mm10ToMm9.over.chain' ]; then
+            if [ ! -e 'mm10ToMm9.over.chain.gz' ]; then
+                wget 'http://hgdownload.soe.ucsc.edu/goldenPath/mm10/liftOver/mm10ToMm9.over.chain.gz'
+                if [ $? != 0 ]; then
+                    echo 'Failed to download mm10 to mm9 chain file.'
+                    exit 1
+                fi
+            fi
+            gunzip 'mm10ToMm9.over.chain.gz'
+            if [ $? != 0 ]; then
+                echo 'Failed to unzip mm10 to mm9 chain file.'
+                exit 1
+            fi
+        fi
+        if [ ! -e 'mm9.blacklist.bed.gz' ]; then
+            if [ ! -e 'mm9.blacklist.bed' ]; then
+                if [ ! -e 'mm9_postlift.bed' ]; then
+                    # Perform liftover.
+                    liftOver 'mm10_prelift.bed' 'mm10ToMm9.over.chain' 'mm9_postlift.bed' 'unmapped.bed'
+                    if [ $? != 0 ]; then
+                        echo 'Failed lifting mm10 to mm9 blacklist.'
+                        exit 1
+                    fi
+                fi
+                sort -k1V -k2n -k3n 'mm9_postlift.bed' >'mm9.blacklist.bed'
+                if [ $? != 0 ]; then
+                    echo 'Failed to sort post-lift mm9 blacklist.'
+                    exit 1
+                fi
+            fi
+            bgzip 'mm9.blacklist.bed'
+            if [ $? != 0 ]; then
+                echo 'Failed to compress mm9 blacklist.'
+                exit 1
+            fi
+        fi
+        if [ ! -e 'mm9.blacklist.bed.gz.tbi' ]; then
+            tabix -p bed 'mm9.blacklist.bed.gz'
+            if [ $? != 0 ]; then
+                echo 'Failed to tabix index mm9 blacklist.'
+                exit 1
+            fi
+        fi
+    fi
 done
 
 # Download the training data.
 # TODO
 # Download ce10.sorted_data.all.bed.gz etc.
-# Download validation data.
+
+# Generate all the validation data.
+conda deactivate
+conda activate 'DeepArk_manuscript_train'
+if [ $? != 0 ]; then
+    echo 'Failed to activate training environment for generating validation data.'
+    exit 1
+fi
+declare -a ORGANISMS=('mus_musculus' 'danio_rerio' 'caenorhabditis_elegans' 'drosophila_melanogaster')
+declare -a GENOMES=('mm9' 'danRer11' 'ce10' 'dm3')
+for i in "${!ORGANISMS[@]}"; do
+    ORGANISM="${ORGANISMS[i]}"
+    GENOME="${GENOMES[i]}"
+    cd 'train'
+    if [ $? != 0 ]; then
+        echo 'Failed to enter training directory to generate validation data for '"${ORGANISM}"
+        exit 1
+    fi
+    python ./train/write_h5.py 'train/validate.'"${ORGANISM}"'.yml' 'validate' '1000' '1337' True "${GENOME}"'.'
+    if [ $? != 0 ]; then
+        echo 'Failed to generate validation data for '"${ORGANISM}"
+        exit 1
+    fi
+done
+
+
 # Download test data.
 
 
