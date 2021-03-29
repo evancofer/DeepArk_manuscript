@@ -35,7 +35,7 @@ sampler: !obj:selene_sdk.samplers.MultiFileSampler {
             mode: train,
             save_datasets: []
         },
-        size: 1000000000,
+        size: 0,
         num_workers: 0,
         batch_size: 128
     },
@@ -44,6 +44,12 @@ sampler: !obj:selene_sdk.samplers.MultiFileSampler {
         shuffle: False,
         unpackbits: True
     },
+    test_sampler: !obj:selene_sdk.samplers/file_samplers.h5_dataset.H5DataLoader {
+        filepath: "../data/mm9.test.seed=1337,N=1000000,sequence_length=4095,bins_start=2047,bins_end=2048,bin_size=1,step_size=1,feature_thresholds=100.h5",
+        shuffle: False,
+        unpackbits: True,
+        in_memory: False
+    }
     features: !obj:selene_sdk.utils.load_features_list {
         input_path: distinct_features.mus_musculus.txt
     }
@@ -51,15 +57,16 @@ sampler: !obj:selene_sdk.samplers.MultiFileSampler {
 train_model: !obj:selene_sdk.TrainModel {
     batch_size: 128,
     report_stats_every_n_steps: 5000,
-    n_validation_samples: 64000,
+    n_validation_samples: 0,
     save_checkpoint_every_n_steps: 5000,
     use_cuda: True,
     data_parallel: True,
     logging_verbosity: 2,
     cpu_n_threads: 19,
-    n_test_samples: 1,
-    report_gt_feature_n_positives: 5,
-    disable_scheduler: False
+    n_test_samples: 1000000,
+    report_gt_feature_n_positives: 50,
+    disable_scheduler: False,
+    checkpoint_resume: ../DeepArk/data/mus_musculus.pth.tar
 }
 output_dir: outputs/mus_musculus
 random_seed: 1337

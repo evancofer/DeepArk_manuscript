@@ -63,7 +63,7 @@ if __name__ == "__main__":
         seqs = None
         tgts = None
         for i in range(n_steps):
-            if i % 50 == 0:
+            if i % 500 == 0:
                 print("processing step {0} for {1} records".format(i, arguments["<mode>"]))
             sequences, targets = data_sampler.sample(batch_size=configs["batch_size"])
             sequences_length = sequences.shape[1]

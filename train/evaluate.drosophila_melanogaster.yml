@@ -1,12 +1,12 @@
 ---
 ops: [train]
 model: {
-    path: model.mus_musculus.py,
+    path: model.drosophila_melanogaster.py,
     class: DeepArkModel,
     class_args: {
         sequence_length: 4095,
-        n_features: 4119,
-        dropout: 0.15,
+        n_features: 1552,
+        dropout: 0.20,
         channels: [160, 320, 480, 560, 720]
     }
 }
@@ -14,17 +14,17 @@ model: {
 sampler: !obj:selene_sdk.samplers.MultiFileSampler {
     train_sampler: !obj:selene_sdk.samplers.sampler_dataset.SamplerDataLoader {
         sampler: !obj:selene_sdk.samplers.RandomPositionsSampler {
-            target_path: ../data/mm9.sorted_data.all.bed.gz,
+            target_path: ../data/dm3.sorted_data.all.bed.gz,
             reference_sequence: !obj:selene_sdk.sequences.Genome {
-                input_path: ../data/mm9.fa,
-                blacklist_regions: ../data/mm9.blacklist.bed.gz
+                input_path: ../data/dm3.fa,
+                blacklist_regions: ../data/dm3.blacklist.bed.gz
             },
             features: !obj:selene_sdk.utils.load_features_list {
-                input_path: distinct_features.mus_musculus.txt
+                input_path: distinct_features.drosophila_melanogaster.txt
             },
-            output_dir: /mnt/ceph/users/ecofer/DeepArk_training/mm9.05.v2/oceanfloor_4095_v7/outputs,
-            test_holdout: [chr10, chrM, chr13_random, chr16_random, chr17_random, chr1_random, chr3_random, chr4_random, chr5_random, chr7_random, chr8_random, chr9_random, chrUn_random, chrX_random, chrY_random],
-            validation_holdout: [chr9],
+            output_dir: outputs/drosophila_melanogaster,
+            test_holdout: [chr2L, chr2LHet, chrM],
+            validation_holdout: [chr2R, chr2RHet],
             seed: 1337,
             sequence_length: 4095,
             step_size: 1,
@@ -35,33 +35,40 @@ sampler: !obj:selene_sdk.samplers.MultiFileSampler {
             mode: train,
             save_datasets: []
         },
-        size: 1000000000,
+        size: 0,
         num_workers: 0,
         batch_size: 128
     },
     validate_sampler: !obj:selene_sdk.samplers.file_samplers.h5_dataset.H5DataLoader {
-        filepath: "../data/mm9.validate.seed=1337,N=64000,sequence_length=4095,bins_start=2047,bins_end=2048,bin_size=1,step_size=1,feature_thresholds=100.h5",
+        filepath: "../data/dm3.validate.seed=1337,N=64000,sequence_length=4095,bins_start=2047,bins_end=2048,bin_size=1,step_size=1,feature_thresholds=100.h5",
         shuffle: False,
         unpackbits: True
     },
+    test_sampler: !obj:selene_sdk.samplers.file_samplers.h5_dataset.H5DataLoader {
+        filepath: "../data/dm3.test.seed=1337,N=1000000,sequence_length=4095,bins_start=2047,bins_end=2048,bin_size=1,step_size=1,feature_thresholds=100.h5",
+        shuffle: False,
+        unpackbits: True,
+        in_memory: False
+    },
     features: !obj:selene_sdk.utils.load_features_list {
-        input_path: distinct_features.mus_musculus.txt
+        input_path: distinct_features.drosophila_melanogaster.txt
     }
 }
 train_model: !obj:selene_sdk.TrainModel {
     batch_size: 128,
     report_stats_every_n_steps: 5000,
-    n_validation_samples: 64000,
+    n_validation_samples: 0,
     save_checkpoint_every_n_steps: 5000,
     use_cuda: True,
     data_parallel: True,
     logging_verbosity: 2,
     cpu_n_threads: 19,
-    n_test_samples: 1,
-    report_gt_feature_n_positives: 5,
-    disable_scheduler: False
+    n_test_samples: 1000000,
+    report_gt_feature_n_positives: 50,
+    disable_scheduler: False,
+    checkpoint_resume: ../DeepArk/data/drosophila_melanogaster.pth.tar
 }
-output_dir: outputs/mus_musculus
+output_dir: outputs/drosophila_melanogaster
 random_seed: 1337
 create_subdirectory: True
 ...
