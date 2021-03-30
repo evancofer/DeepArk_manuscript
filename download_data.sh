@@ -1,5 +1,14 @@
 #!/usr/bin/env bash
 
+source "${HOME}"'/.bashrc' # This is because conda will not work otherwise..
+
+conda activate 'DeepArk_manuscript'
+if [ $? != 0 ]; then
+    echo 'Failed to activate the DeepArk_manuscript conda environment.'
+    exit 1
+fi
+
+
 # Setup directory.
 if [ ! -e 'data' ]; then
     echo 'Making data directory.'
@@ -17,7 +26,7 @@ if [ $? != 0 ]; then
 fi
 
 # Download genomes.
-declare -a GENOME_URLS=('https://hgdownload.soe.ucsc.edu/goldenPath/mm10/bigZips/mm10.2bit' 'https://hgdownload.soe.ucsc.edu/goldenPath/ce11/bigZips/ce11.2bit' 'https://hgdownload.soe.ucsc.edu/goldenPath/dm6/bigZips/dm6.2bit' 'https://hgdownload.soe.ucsc.edu/goldenPath/danRer11/bigZips/danRer11.2bit')
+declare -a GENOME_URLS=('https://hgdownload.soe.ucsc.edu/goldenPath/mm9/bigZips/mm9.2bit' 'https://hgdownload.soe.ucsc.edu/goldenPath/ce10/bigZips/ce10.2bit' 'https://hgdownload.soe.ucsc.edu/goldenPath/dm3/bigZips/dm3.2bit' 'https://hgdownload.soe.ucsc.edu/goldenPath/danRer11/bigZips/danRer11.2bit')
 
 for URL in "${GENOME_URLS[@]}"; do
     echo "Downloading: $URL"
@@ -144,11 +153,26 @@ for URL in "${BLACKLIST_URLS[@]}"; do
 done
 
 # Download the training data.
-# TODO
-# Download ce10.sorted_data.all.bed.gz etc.
+declare -a ZENODO_URLS=('https://zenodo.org/record/4647691/files/ce10.sorted_data.all.bed.gz' 'https://zenodo.org/record/4647691/files/ce10.sorted_data.all.bed.gz.tbi' 'https://zenodo.org/record/4647691/files/danRer11.sorted_data.all.bed.gz' 'https://zenodo.org/record/4647691/files/danRer11.sorted_data.all.bed.gz.tbi' 'https://zenodo.org/record/4647691/files/dm3.sorted_data.all.bed.gz' 'https://zenodo.org/record/4647691/files/dm3.sorted_data.all.bed.gz.tbi' 'https://zenodo.org/record/4647691/files/mm9.sorted_data.all.bed.gz' 'https://zenodo.org/record/4647691/files/mm9.sorted_data.all.bed.gz.tbi')
+for URL in "${ZENODO_URLS[@]}"; do
+    wget "${URL}"
+    if [ $? != 0 ]; then
+        echo 'Failed to download from '"${URL}"
+        exit 1
+    fi
+done
 
-# Generate all the validation data.
+# Generate all the validation and testing data.
+cd '../train'
+if [ $? != 0 ]; then
+    echo 'Failed to exit the data directory and enter the training directory.'
+    exit 1
+fi
 conda deactivate
+if [ $? != 0 ]; then
+    echo 'Failed to deactivate conda environment.'
+    exit 1
+fi
 conda activate 'DeepArk_manuscript_train'
 if [ $? != 0 ]; then
     echo 'Failed to activate training environment for generating validation data.'
@@ -159,21 +183,17 @@ declare -a GENOMES=('mm9' 'danRer11' 'ce10' 'dm3')
 for i in "${!ORGANISMS[@]}"; do
     ORGANISM="${ORGANISMS[i]}"
     GENOME="${GENOMES[i]}"
-    cd 'train'
-    if [ $? != 0 ]; then
-        echo 'Failed to enter training directory to generate validation data for '"${ORGANISM}"
-        exit 1
-    fi
-    python ./train/write_h5.py 'train/validate.'"${ORGANISM}"'.yml' 'validate' '1000' '1337' True "${GENOME}"'.'
+    python ./write_h5.py 'validate.'"${ORGANISM}"'.yml' 'validate' '1000' '1337' True '../data/'"${GENOME}"'.'
     if [ $? != 0 ]; then
         echo 'Failed to generate validation data for '"${ORGANISM}"
         exit 1
     fi
+    python ./write_h5.py 'test.'"${ORGANISM}"'.yml' 'test' '15625' '1337' 'True' '../data/'"${GENOME}"'.'
+    if [ $? != 0 ]; then
+        echo 'Failed to generate test data for '"${ORGANISM}"
+        exit 1
+    fi
 done
-
-
-# Download test data.
-
 
 # Download the MPRA data.
 # TODO.
