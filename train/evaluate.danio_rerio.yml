@@ -46,7 +46,8 @@ sampler: !obj:selene_sdk.samplers.MultiFileSampler {
     test_sampler: !obj:selene_sdk.samplers.file_samplers.h5_dataset.H5DataLoader {
         filepath: "../data/danRer11.test.seed=1337,N=64000,sequence_length=4095,bins_start=2047,bins_end=2048,bin_size=1,step_size=1,feature_thresholds=100.h5",
         shuffle: False,
-        unpackbits: True
+        unpackbits: True,
+        in_memory: False
     },
 
     features: !obj:selene_sdk.utils.load_features_list {

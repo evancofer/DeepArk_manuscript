@@ -251,7 +251,8 @@ class TrainModel(object):
         self._validation_metrics = PerformanceMetrics(
             self.sampler.get_feature_from_index,
             report_gt_feature_n_positives=report_gt_feature_n_positives,
-            metrics=dict(roc_auc_approx=auc_u_test),
+            metrics=dict(roc_auc=roc_auc_score,
+                         average_precision=average_precision_score),
             num_workers=cpu_n_threads)
 
         if "test" in self.sampler.modes:
@@ -260,7 +261,8 @@ class TrainModel(object):
             self._test_metrics = PerformanceMetrics(
                 self.sampler.get_feature_from_index,
                 report_gt_feature_n_positives=report_gt_feature_n_positives,
-                metrics=dict(roc_auc_approx=auc_u_test),
+                metrics=dict(roc_auc=roc_auc_score,
+                     average_precision=average_precision_score),
                 num_workers=cpu_n_threads)
 
         # self._start_step = 0

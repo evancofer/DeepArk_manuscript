@@ -196,7 +196,28 @@ for i in "${!ORGANISMS[@]}"; do
 done
 
 # Download the MPRA data.
-# TODO.
+cd '../data'
+if [ $? != 0 ]; then
+    echo 'Failed to cd to data.'
+    exit 1
+fi
+wget 'https://zenodo.org/record/4060298/files/data.tsv.gz'
+if [ $? != 0 ]; then
+    echo 'Failed to download MPRA data.'
+    exit 1
+fi
+gunzip -c 'data.tsv.gz' >'mpra_data.tsv'
+if [ $? != 0 ]; then
+    echo 'Failed to unzip MPRA data.'
+    exit 1
+else
+    rm 'data.tsv.gz'
+    if [ $? != 0 ]; then
+        echo 'Failed to cleanup MPRA data download.'
+        exit 1
+    fi
+fi
+
 
 # Download the O. latipes data.
 # Genome
