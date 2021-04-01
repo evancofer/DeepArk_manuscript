@@ -7,9 +7,10 @@
 1. [What is DeepArk?](#what_is_deepark)
 2. [What is this repository for?](#what_is_this)
 3. [Setup and installation](#setup)
-4. [Training new models](#train_models)
-5. [Testing models](#test_models)
-6. [Downloading weights without training new models](#download_weights)
+4. [Generating figures from the manuscript](#figures)
+5. [Training new models](#train_models)
+6. [Testing models](#test_models)
+7. [Downloading weights without training new models](#download_weights)
 
 ## <a name="what_is_deepark"></a>What is DeepArk?
 DeepArk is a set of models of the worm, fish, fly, and mouse regulatory codes.
@@ -63,6 +64,10 @@ This can be accomplished with the following command:
 ```
 ./download_data.sh
 ```
+
+## <a name="figures"></a>Generating manuscript figures
+We have provided [Jupyter Notebooks](https://github.com/jupyter/notebook) for reproducing the figures from the manuscript. 
+We have placed these in the `figures` directory.
 
 ## <a name="train_models"></a>Training new models
 
