@@ -18,8 +18,8 @@ if [ $? != 0 ]; then
 fi
 
 python -u '../DeepArk/DeepArk.py' 'issm' \
-    --checkpoint-file '../DeepArk' \
-    --input-file '../data/urn:mavedb:00000006-a-1.fa' \
+    --checkpoint-file '../DeepArk/data/mus_musculus.pth.tar' \
+    --input-file 'urn:mavedb:00000006-a-1.fa' \
     --output-dir 'outputs' \
     --output-format 'hdf5' \
     --batch-size '256'
