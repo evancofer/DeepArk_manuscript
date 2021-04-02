@@ -26,7 +26,7 @@ if [ $? != 0 ]; then
 fi
 
 # Download genomes.
-declare -a GENOME_URLS=('https://hgdownload.soe.ucsc.edu/goldenPath/mm9/bigZips/mm9.2bit' 'https://hgdownload.soe.ucsc.edu/goldenPath/ce10/bigZips/ce10.2bit' 'https://hgdownload.soe.ucsc.edu/goldenPath/dm3/bigZips/dm3.2bit' 'https://hgdownload.soe.ucsc.edu/goldenPath/danRer11/bigZips/danRer11.2bit' 'http://hgdownload.soe.ucsc.edu/goldenPath/hg19/bigZips/hg19.2bit')
+declare -a GENOME_URLS=('https://hgdownload.soe.ucsc.edu/goldenPath/mm9/bigZips/mm9.2bit' 'https://hgdownload.soe.ucsc.edu/goldenPath/ce10/bigZips/ce10.2bit' 'https://hgdownload.soe.ucsc.edu/goldenPath/dm3/bigZips/dm3.2bit' 'https://hgdownload.soe.ucsc.edu/goldenPath/dm6/bigZips/dm6.2bit' 'https://hgdownload.soe.ucsc.edu/goldenPath/danRer11/bigZips/danRer11.2bit')
 
 for URL in "${GENOME_URLS[@]}"; do
     echo "Downloading: $URL"
@@ -206,25 +206,20 @@ if [ $? != 0 ]; then
     echo 'Failed to download MPRA data.'
     exit 1
 fi
-gunzip -c 'data.tsv.gz' >'mpra_data.tsv'
-if [ $? != 0 ]; then
-    echo 'Failed to unzip MPRA data.'
-    exit 1
-else
-    rm 'data.tsv.gz'
+if [ ! -e 'mpra_data.tsv' ]; then
+    gunzip -c 'data.tsv.gz' >'mpra_data.tsv'
     if [ $? != 0 ]; then
-        echo 'Failed to cleanup MPRA data download.'
+        echo 'Failed to unzip MPRA data.'
         exit 1
+    else
+        rm 'data.tsv.gz'
+        if [ $? != 0 ]; then
+            echo 'Failed to cleanup MPRA data download.'
+            exit 1
+        fi
     fi
 fi
-cat \
-    <(echo '>urn:mavedb:00000006-a-1') \
-    <(samtools faidx 'hg19.fa' 'chr9:104193652-104197746' | tail --lines +2) \
-    >urn:mavedb:00000006-a-1.fa
-if [ $? != 0 ]; then
-    echo 'Failed to create MPRA input FASTA.'
-    exit 1
-fi
+#samtools faidx ~/data/genomes/hg19.fa chr9:104193652-104197746
 
 # Download the O. latipes data.
 # Genome
