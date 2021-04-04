@@ -49,7 +49,7 @@ sampler: !obj:selene_sdk.samplers.MultiFileSampler {
         shuffle: False,
         unpackbits: True,
         in_memory: False
-    }
+    },
     features: !obj:selene_sdk.utils.load_features_list {
         input_path: distinct_features.mus_musculus.txt
     }
