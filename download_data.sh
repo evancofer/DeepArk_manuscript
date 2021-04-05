@@ -26,31 +26,35 @@ if [ $? != 0 ]; then
 fi
 
 # Download genomes.
-declare -a GENOME_URLS=('https://hgdownload.soe.ucsc.edu/goldenPath/mm9/bigZips/mm9.2bit' 'https://hgdownload.soe.ucsc.edu/goldenPath/ce10/bigZips/ce10.2bit' 'https://hgdownload.soe.ucsc.edu/goldenPath/dm3/bigZips/dm3.2bit' 'https://hgdownload.soe.ucsc.edu/goldenPath/dm6/bigZips/dm6.2bit' 'https://hgdownload.soe.ucsc.edu/goldenPath/danRer11/bigZips/danRer11.2bit')
+declare -a GENOME_URLS=('https://hgdownload.soe.ucsc.edu/goldenPath/mm9/bigZips/mm9.2bit' 'https://hgdownload.soe.ucsc.edu/goldenPath/ce10/bigZips/ce10.2bit' 'http://hgdownload.soe.ucsc.edu/goldenPath/ce11/bigZips/ce11.2bit' 'https://hgdownload.soe.ucsc.edu/goldenPath/dm3/bigZips/dm3.2bit' 'https://hgdownload.soe.ucsc.edu/goldenPath/dm6/bigZips/dm6.2bit' 'https://hgdownload.soe.ucsc.edu/goldenPath/danRer11/bigZips/danRer11.2bit')
 
 for URL in "${GENOME_URLS[@]}"; do
     echo "Downloading: $URL"
-
-    wget "${URL}"  2>/dev/null || curl -O "${URL}"
-    if [ $? != 0 ]; then
-        echo 'Failed downloading the genome from '"${URL}"
-        exit 1
-    fi
-
     GENOME=$(basename "${URL}")
     if [ $? != 0 ]; then
         echo 'Failed getting genome name.'
         exit 1
     fi
-    twoBitToFa "${GENOME}" "${GENOME%.*}"'.fa'
-    if [ $? != 0 ]; then
-        echo 'Failed running twoBitToFa on '"${GENOME}"
-        exit 1
+    if [ ! -e "${GENOME%.*}"'.fa' ]; then
+        if [ ! -e "${GENOME%.*}"'.2bit' ]; then
+            wget "${URL}"  2>/dev/null || curl -O "${URL}"
+            if [ $? != 0 ]; then
+                echo 'Failed downloading the genome from '"${URL}"
+                exit 1
+            fi
+        fi
+        twoBitToFa "${GENOME}" "${GENOME%.*}"'.fa'
+        if [ $? != 0 ]; then
+            echo 'Failed running twoBitToFa on '"${GENOME}"
+            exit 1
+        fi
     fi
-    faidx --no-output "${GENOME%.*}"'.fa'
-    if [ $? != 0 ]; then
-        echo 'Failed to index '"${GENOME%.*}"'.fa'
-        exit 1
+    if [ ! -e "${GENOME%.*}"'.fa.fai' ]; then
+        faidx --no-output "${GENOME%.*}"'.fa'
+        if [ $? != 0 ]; then
+            echo 'Failed to index '"${GENOME%.*}"'.fa'
+            exit 1
+        fi
     fi
     echo 'Downloaded and processed '"${GENOME}"' successfully'
 done
@@ -155,10 +159,13 @@ done
 # Download the training data.
 declare -a ZENODO_URLS=('https://zenodo.org/record/4647691/files/ce10.sorted_data.all.bed.gz' 'https://zenodo.org/record/4647691/files/ce10.sorted_data.all.bed.gz.tbi' 'https://zenodo.org/record/4647691/files/danRer11.sorted_data.all.bed.gz' 'https://zenodo.org/record/4647691/files/danRer11.sorted_data.all.bed.gz.tbi' 'https://zenodo.org/record/4647691/files/dm3.sorted_data.all.bed.gz' 'https://zenodo.org/record/4647691/files/dm3.sorted_data.all.bed.gz.tbi' 'https://zenodo.org/record/4647691/files/mm9.sorted_data.all.bed.gz' 'https://zenodo.org/record/4647691/files/mm9.sorted_data.all.bed.gz.tbi')
 for URL in "${ZENODO_URLS[@]}"; do
-    wget "${URL}"
-    if [ $? != 0 ]; then
-        echo 'Failed to download from '"${URL}"
-        exit 1
+    DST=$(basename "${URL}")
+    if [ ! -e "${DST}" ]; then
+        wget "${URL}"
+        if [ $? != 0 ]; then
+            echo 'Failed to download from '"${URL}"
+            exit 1
+        fi
     fi
 done
 
@@ -183,15 +190,21 @@ declare -a GENOMES=('mm9' 'danRer11' 'ce10' 'dm3')
 for i in "${!ORGANISMS[@]}"; do
     ORGANISM="${ORGANISMS[i]}"
     GENOME="${GENOMES[i]}"
-    python ./write_h5.py 'validate.'"${ORGANISM}"'.yml' 'validate' '1000' '1337' True '../data/'"${GENOME}"'.'
-    if [ $? != 0 ]; then
-        echo 'Failed to generate validation data for '"${ORGANISM}"
-        exit 1
+    VAL_FILE='../data/'"${GENOME}"'.validate.seed=1337,N=64000,sequence_length=4095,bins_start=2047,bins_end=2048,bin_size=1,step_size=1,feature_thresholds=100.h5'
+    if [ ! -e "${VAL_FILE}" ]; then
+        python ./write_h5.py 'validate.'"${ORGANISM}"'.yml' 'validate' '1000' '1337' True '../data/'"${GENOME}"'.'
+        if [ $? != 0 ]; then
+            echo 'Failed to generate validation data for '"${ORGANISM}"
+            exit 1
+        fi
     fi
-    python ./write_h5.py 'test.'"${ORGANISM}"'.yml' 'test' '15625' '1337' 'True' '../data/'"${GENOME}"'.'
-    if [ $? != 0 ]; then
-        echo 'Failed to generate test data for '"${ORGANISM}"
-        exit 1
+    TEST_FILE='../data/'"${GENOME}"'.test.seed=1337,N=1000000,sequence_length=4095,bins_start=2047,bins_end=2048,bin_size=1,step_size=1,feature_thresholds=100.h5'
+    if [ ! -e "${TEST_FILE}" ]; then
+        python ./write_h5.py 'test.'"${ORGANISM}"'.yml' 'test' '15625' '1337' 'True' '../data/'"${GENOME}"'.'
+        if [ $? != 0 ]; then
+            echo 'Failed to generate test data for '"${ORGANISM}"
+            exit 1
+        fi
     fi
 done
 
@@ -201,15 +214,23 @@ if [ $? != 0 ]; then
     echo 'Failed to cd to data.'
     exit 1
 fi
-wget 'https://zenodo.org/record/4060298/files/data.tsv.gz'
-if [ $? != 0 ]; then
-    echo 'Failed to download MPRA data.'
-    exit 1
-fi
 if [ ! -e 'mpra_data.tsv' ]; then
+    if [ -e 'data.tsv.gz' ]; then
+        rm 'data.tsv.gz'
+        if [ $? != 0 ]; then
+            echo 'Failed to remove existing data.tsv.gz file.'
+            exit 1
+        fi
+    fi
+    wget 'https://zenodo.org/record/4060298/files/data.tsv.gz'
+    if [ $? != 0 ]; then
+        echo 'Failed to download MPRA data.'
+        exit 1
+    fi
     gunzip -c 'data.tsv.gz' >'mpra_data.tsv'
     if [ $? != 0 ]; then
         echo 'Failed to unzip MPRA data.'
+        rm 'mpra_data.tsv'
         exit 1
     else
         rm 'data.tsv.gz'
@@ -220,6 +241,43 @@ if [ ! -e 'mpra_data.tsv' ]; then
     fi
 fi
 #samtools faidx ~/data/genomes/hg19.fa chr9:104193652-104197746
+
+# Download coordinates for C elegans DCC scan of chrX.
+if [ ! -e 'dcc_data.tsv' ]; then
+    if [ -e 'data.tsv.gz' ]; then
+        rm 'data.tsv.gz'
+        if [ $? != 0 ]; then
+            echo 'Failed to remove existing data.tsv.gz file.'
+            exit 1
+        fi
+    fi
+    wget 'https://zenodo.org/record/4663161/files/data.tsv.gz'
+    if [ $? != 0 ]; then
+        echo 'Failed to download DCC data.'
+        exit 1
+    fi
+    gunzip -c 'data.tsv.gz' >'dcc_data.tsv'
+    if [ $? != 0 ]; then
+        echo 'Failed to unzip DCC data.'
+        rm 'dcc_data.tsv'
+        exit 1
+    else
+        rm 'data.tsv.gz'
+        if [ $? != 0 ]; then
+            echo 'Failed to cleanup DCC data download.'
+            exit 1
+        fi
+    fi
+fi
+if [ ! -e 'c_elegans_chrX.bed' ]; then
+    tail -n +2 'dcc_data.tsv' | \
+        cut -f1,2,3 | sort -k1V -k2n -k3n | uniq >'c_elegans_chrX.bed'
+    if [ $? != 0 ]; then
+        echo 'Failed to create c_elegans_chrX.bed'
+        rm 'c_elegans_chrX.bed'
+        exit 1
+    fi
+fi
 
 # Download the O. latipes data.
 # Genome

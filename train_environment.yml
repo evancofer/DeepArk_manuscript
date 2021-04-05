@@ -6,12 +6,13 @@ channels:
 dependencies:
   - _libgcc_mutex=0.1=main
   - blas=1.0=mkl
-  - ca-certificates=2019.5.15=1
-  - certifi=2019.6.16=py36_1
+  - ca-certificates=2021.1.19=h06a4308_1
+  - certifi=2020.12.5=py36h06a4308_0
   - cffi=1.12.3=py36h2e261b9_0
   - click=7.0=py36_0
   - cudatoolkit=10.0.130=0
   - cython=0.29.13=py36he6710b0_0
+  - docopt=0.6.2=py36h06a4308_0
   - freetype=2.9.1=h8a8886c_1
   - intel-openmp=2019.4=243
   - jpeg=9b=h024ee3a_2
@@ -31,7 +32,7 @@ dependencies:
   - numpy=1.16.5=py36h7e9f1db_0
   - numpy-base=1.16.5=py36hde5b4d6_0
   - olefile=0.46=py36_0
-  - openssl=1.0.2t=h7b6447c_1
+  - openssl=1.0.2u=h7b6447c_0
   - pillow=6.1.0=py36h34e0f95_0
   - pip=19.2.2=py36_0
   - pycparser=2.19=py36_0
