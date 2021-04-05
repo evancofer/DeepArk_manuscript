@@ -44,7 +44,7 @@ sampler: !obj:selene_sdk.samplers.MultiFileSampler {
         shuffle: False,
         unpackbits: True
     },
-    test_sampler: !obj:selene_sdk.samplers/file_samplers.h5_dataset.H5DataLoader {
+    test_sampler: !obj:selene_sdk.samplers.file_samplers.h5_dataset.H5DataLoader {
         filepath: "../data/mm9.test.seed=1337,N=1000000,sequence_length=4095,bins_start=2047,bins_end=2048,bin_size=1,step_size=1,feature_thresholds=100.h5",
         shuffle: False,
         unpackbits: True,
