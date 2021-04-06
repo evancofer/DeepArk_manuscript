@@ -14,6 +14,7 @@
 8. [Downloading weights without training new models](#download_weights)
 9. [Reproducing the MPRA _in silico_ saturated mutagenesis predictions](#mpra)
 10. [Reproducing the variant effect predictions for the _T48_ enhancer alleles](#t48)
+11. [Reproducing the DCC analysis](#dcc)
 
 
 ## <a name="what_is_deepark"></a>What is DeepArk?
@@ -75,6 +76,7 @@ This can be accomplished with the following command:
 ## <a name="figures"></a>Generating manuscript figures
 We have provided [Jupyter Notebooks](https://github.com/jupyter/notebook) for reproducing the figures from the manuscript.
 We have placed these in the `figures` directory.
+The code for the supplemental figures are in the `supplemental_figures` directory.
 
 
 ## <a href="why_data"></a>Why do the figure notebooks use data from the manuscript and Zenodo?
@@ -144,3 +146,27 @@ cd T48
 
 You can then use these results in the notebook for Figure 3 or compare them with the predictions provided with the manuscript.
 
+## <a name="dcc"></a>Reproducing the DCC analysis
+To reproduce the chromosome-wide prediction of DCC localization for the _C. elegans_ X Chromosome, run the following commands after downloading the manuscript data:
+
+```
+cd DCC
+./c_elegans_chrX_prediction.sh'
+```
+
+To reproduce the predictions for the _in silico_ saturated mutagenesis of the top predicted DCC sites, rnu the following:
+
+```
+cd DCC
+./c_elegans_dcc_issm.sh
+```
+
+Finally, to determine the _rex_ sites in the top predicted DCC sites, you will need to run the following:
+
+```
+cd DCC
+./get_motif_hits.sh
+```
+
+
+##
