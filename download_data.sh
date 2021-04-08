@@ -26,8 +26,7 @@ if [ $? != 0 ]; then
 fi
 
 # Download genomes.
-declare -a GENOME_URLS=('https://hgdownload.soe.ucsc.edu/goldenPath/mm9/bigZips/mm9.2bit' 'https://hgdownload.soe.ucsc.edu/goldenPath/ce10/bigZips/ce10.2bit' 'http://hgdownload.soe.ucsc.edu/goldenPath/ce11/bigZips/ce11.2bit' 'https://hgdownload.soe.ucsc.edu/goldenPath/dm3/bigZips/dm3.2bit' 'https://hgdownload.soe.ucsc.edu/goldenPath/dm6/bigZips/dm6.2bit' 'https://hgdownload.soe.ucsc.edu/goldenPath/danRer11/bigZips/danRer11.2bit')
-
+declare -a GENOME_URLS=('https://hgdownload.soe.ucsc.edu/goldenPath/mm9/bigZips/mm9.2bit' 'https://hgdownload.soe.ucsc.edu/goldenPath/ce10/bigZips/ce10.2bit' 'http://hgdownload.soe.ucsc.edu/goldenPath/ce11/bigZips/ce11.2bit' 'https://hgdownload.soe.ucsc.edu/goldenPath/dm3/bigZips/dm3.2bit' 'https://hgdownload.soe.ucsc.edu/goldenPath/dm6/bigZips/dm6.2bit' 'https://hgdownload.soe.ucsc.edu/goldenPath/danRer11/bigZips/danRer11.2bit' 'https://hgdownload.soe.ucsc.edu/goldenPath/danRer10/bigZips/danRer10.2bit' 'http://hgdownload.soe.ucsc.edu/goldenPath/oryLat2/bigZips/oryLat2.2bit')
 for URL in "${GENOME_URLS[@]}"; do
     echo "Downloading: $URL"
     GENOME=$(basename "${URL}")
@@ -208,6 +207,12 @@ for i in "${!ORGANISMS[@]}"; do
     fi
 done
 
+conda deactivate
+if [ $? != 0 ]; then
+    echo 'Failed to deactivate conda environment.'
+    exit 1
+fi
+
 # Download the MPRA data.
 cd '../data'
 if [ $? != 0 ]; then
@@ -279,9 +284,156 @@ if [ ! -e 'c_elegans_chrX.bed' ]; then
     fi
 fi
 
-# Download the O. latipes data.
-# Genome
-# Raw data
-# Process raw data.
+# Setup interspecies prediction data.
+conda activate DeepArk_manuscript
+if [ $? != 0 ]; then
+    echo 'Failed to activate onda environment for interspecies prediction.'
+    exit 1
+fi
+if [ ! -e 'oryLat2.normalized.fa' ]; then
+    picard -Xmx32G -Xms8G NormalizeFasta INPUT='oryLat2.fa' OUTPUT='oryLat2.normalized.fa'
+    if [ $? != 0 ]; then
+        echo 'Failed to normalize oryLat2.fa with picard.'
+        exit 1
+    fi
+    if [ -e 'oryLat2.normalized.fa.fai' ]; then
+        rm 'oryLat2.normalized.fa.fai'
+        if [ $? != 0 ]; then
+            echo 'Failed to remove old index for oryLat2.'
+            exit 1
+        fi
+    fi
+    samtools faidx 'oryLat2.normalized.fa'
+    if [ $? != 0 ]; then
+        echo 'Failed to index normalized oryLat2 fasta.'
+        exit 1
+    fi
+fi
+if [ ! -e 'oryLat2.normalized.dict' ]; then
+    picard -Xmx32G -Xms8G CreateSequenceDictionary REFERENCE='oryLat2.normalized.fa' OUTPUT='oryLat2.normalized.dict'
+    if [ $? != 0 ]; then
+        echo 'Failed to create sequence dictionary for normalized oryLat2 fasta.'
+        exit 1
+    fi
+fi
+if [ ! -e 'oryLat2.normalized.fa.bwt' ]; then
+    bwa index 'oryLat2.normalized.fa'
+    if [ $? != 0 ]; then
+        echo 'Failed to index oryLat2 normalized fasta.'
+        exit 1
+    fi
+fi
+if [ ! -e 'multiz8way.maf.gz' ]; then
+    wget 'http://hgdownload.soe.ucsc.edu/goldenPath/danRer7/multiz8way/multiz8way.maf.gz'
+    if [ $? != 0 ]; then
+        echo 'Failed to download multiway alignment for O. latipes and D. rerio.'
+        exit 1
+    fi
+fi
+if [ ! -e 'oryLat2.conserved.merged.bed.gz' ]; then
+    if [ ! -e 'oryLat2.conserved.bed' ]; then
+        python '../interspecies_prediction/get_conserved_regions.py' \
+            --input-file  'multiz8way.maf.gz' \
+            --output-file 'oryLat2.conserved.bed' \
+            --organism 'oryLat2'
+    fi
+    if [ ! -e 'oryLat2.conserved.merged.bed' ]; then
+        bedtools merge \
+            -i 'oryLat2.conserved.bed' \
+             >'oryLat2.conserved.merged.bed'
+        if [ $? != 0 ]; then
+            echo 'Failed to merge oryLat2 conserved regions.'
+            exit 1
+        fi
+    fi
+    bgzip 'oryLat2.conserved.merged.bed'
+    if [ $? != 0 ]; then
+        echo 'Failed to compress oryLat2 conserved merged regions.'
+        exit 1
+    fi
+    if [ -e 'oryLat2.conserved.merged.bed.gz.tbi' ]; then
+        rm 'oryLat2.conserved.merged.bed.gz.tbi'
+        if [ $? != 0 ]; then
+            echo 'Failed to remove old tabix index.'
+            exit 1
+        fi
+    fi
+fi
+if [ ! -e 'oryLat2.conserved.merged.bed.gz.tbi' ]; then
+    tabix -p bed 'oryLat2.conserved.merged.bed.gz'
+    if [ $? != 0 ]; then
+        echo 'Failed to tabix index the compressed oryLat2 conserved merged regions.'
+        exit 1
+    fi
+fi
+if [ ! -e 'danRer10ToOryLat2.over.chain' ]; then
+    if [ ! -e 'danRer10ToOryLat2.over.chain.gz' ]; then
+        wget 'http://hgdownload.soe.ucsc.edu/goldenPath/danRer10/liftOver/danRer10ToOryLat2.over.chain.gz'
+    fi
+    gunzip 'danRer10ToOryLat2.over.chain.gz'
+    if [ $? != 0 ]; then
+        echo 'Failed to unzip the danRer10 to oryLat2 chain.'
+        exit 1
+    fi
+fi
+# Download annotations.
+ORGANISMS=('oryLat2' 'danRer10')
+URLS=('http://ftp.ensembl.org/pub/release-80/gtf/oryzias_latipes/Oryzias_latipes.MEDAKA1.80.gtf.gz' 'http://ftp.ensembl.org/pub/release-80/gtf/danio_rerio/Danio_rerio.GRCz10.80.gtf.gz')
+for i in "${!ORGANISMS[@]}"; do
+    ORGANISM="${ORGANISMS[i]}"
+    URL="${URLS[i]}"
+    if [ ! -e "${ORGANISM}"'.gtf' ]; then
+        if [ ! -e $(basename "${URL}") ]; then
+            wget "${URL}"
+            if [ $? != 0 ]; then
+                echo 'Failed to download the '"${ORGANISM}"' annotations.'
+                exit 1
+            fi
+        fi
+        gunzip -c $(basename "${URL}") >"${ORGANISM}"'.gtf'
+        if [ $? != 0 ]; then
+            echo 'Failed to decompress the downloaded '"${ORGANISM}"' data.'
+            exit 1
+        fi
+    fi
+done
+declare -a ORGANISMS=('oryLat2' 'danRer10')
+for ORGANISM in "${ORGANISMS[@]}"; do
+    if [ ! -e "${ORGANISM}"'.exon' ]; then
+        hisat2_extract_exons.py "${ORGANISM}"'.gtf' >"${ORGANISM}"'.exon'
+        if [ $? != 0 ]; then
+            echo 'Failed to get exons for '"${ORGANISM}"
+            exit 1
+        fi
 
-# Download the conservation scores.
+    fi
+    if [ ! -e "${ORGANISM}"'.ss' ]; then
+        hisat2_extract_splice_sites.py "${ORGANISM}"'.gtf' >"${ORGANISM}"'.ss'
+        if [ $? != 0 ]; then
+            echo 'Failed to extract splice sites for '"${ORGANISM}"
+            exit 1
+        fi
+    fi
+    if [ ! -e "${ORGANISM}"'.1.ht2' ]; then
+        hisat2-build -p 16 --ss "${ORGANISM}"'.ss' --exon "${ORGANISM}"'.exon' "${ORGANISM}"'.fa' "${ORGANISM}"
+        if [ $? != 0 ]; then
+            echo 'Failed to buld index for '"${ORGANISM}"
+            exit 1
+        fi
+    fi
+done
+
+if [ ! -e 'danRer10.pdia4.bed' ]; then
+    seq 0 5 10000 | awk '{print "chr24\t" $1+17187212 "\t" $1+17187212+4095 "\tENSDARG00000018491_" $1 / 5}' >'danRer10.pdia4.bed'
+    if [ $? != 0 ]; then
+        echo 'Failed to genereate danRer10.pdia4.bed'
+        exit 1
+    fi
+fi
+if [ ! -e 'oryLat2.pdia4.bed' ]; then
+    seq 0 5 10000 | awk '{print "chr20\t" $1+13068360 "\t" $1+13068360+4095 "\tENSORLG00000007272_" $1 / 5 }' >'oryLat2.pdia4.bed'
+    if [ $? != 0 ]; then
+        echo 'Failed to generate oryLat2.pdia4.bed'
+        exit 1
+    fi
+fi
