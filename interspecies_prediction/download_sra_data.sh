@@ -95,3 +95,10 @@ if [ ! -e 'data/oryLat2_prediction.labels.h5' ]; then
         exit 1
     fi
 fi
+if [ ! -e 'distinct_features.txt' ]; then
+    cut -f1 -d, interspecies_info.csv | sort | uniq | tr -d '\"' | tail -n+2 >distinct_features.txt
+    if [ $? != 0 ]; then
+        echo 'Failed to create distinct features for oryLat2.'
+        exit 1
+    fi
+fi

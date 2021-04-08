@@ -5,6 +5,7 @@
 *.tbi
 *.fai
 *.fasta
+interspecies_prediction/distinct_features.txt
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

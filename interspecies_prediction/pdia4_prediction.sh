@@ -41,3 +41,19 @@ if [ $? != 0 ]; then
     exit 1
 fi
 
+# Convert outputs.
+declare -a ORGANISMS=('danRer10' 'oryLat2')
+for ORGANISM in "${ORGANISMS[@]}"; do
+    python 'extract_bw_from_h5.py' \
+        --input-h5 'outputs/'"${ORGANISM}"'.pdia4_predictions.h5' \
+        --input-bed '../data/'"${ORGANISM}"'.pdia4.bed' \
+        --genome-file '../data/'"${ORGANISM}"'.fa' \
+        --feature-file '../train/distinct_features.danio_rerio.txt' \
+        --target-feature 'DCD000648SQ' \
+        --output-file 'outputs/'"${ORGANISM}"'.DCD000648SQ.bw'
+    if [ $? != 0 ]; then
+        echo 'Failed to create bigWig for '"${ORGANISM}"
+        exit 1
+    fi
+done
+i
