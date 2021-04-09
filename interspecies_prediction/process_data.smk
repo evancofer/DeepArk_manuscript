@@ -10,9 +10,8 @@ rna_accessions = ["SRX3353227", "SRX3353221"]
 
 rule all:
     input:
-        #expand("data/{sample}.converted.sorted.cleaned.rg.reordered.deduped.bai",
-        #       sample=accessions)
-        #expand("data/{sample}.converted.sorted.cleaned.rg.reordered.deduped_peaks.narrowPeak", sample=accessions),
+        expand("data/{sample}.converted.sorted.cleaned.rg.reordered.dedup_peaks.narrowPeak", sample=accessions),
+        expand("data/{sample}.converted.bam", sample=accessions),
         expand("data/{sample}.CPM.bw", sample=rna_accessions)
 
 
@@ -174,27 +173,27 @@ rule mark_duplicates:
     input:
         "data/{sample}.converted.sorted.cleaned.rg.reordered.bam"
     output:
-        bam="data/{sample,[A-Z0-9]*}.converted.sorted.cleaned.rg.reordered.deduped.bam",
-        metrics="data/{sample,[A-Z0-9]*}.converted.sorted.cleaned.rg.reordered.deduped.dedup_metrics.txt"
+        bam="data/{sample,[A-Z0-9]*}.converted.sorted.cleaned.rg.reordered.dedup.bam",
+        metrics="data/{sample,[A-Z0-9]*}.converted.sorted.cleaned.rg.reordered.dedup.dedup_metrics.txt"
     shell:
         "picard MarkDuplicates REMOVE_DUPLICATES=true I={input} O={output.bam} M={output.metrics}"
 
 
-rule index_deduped:
+rule index_dedup:
     input:
-        "data/{sample}.converted.sorted.cleaned.rg.reordered.deduped.bam"
+        "data/{sample}.converted.sorted.cleaned.rg.reordered.dedup.bam"
     output:
-        "data/{sample,[A-Z0-9]*}.converted.sorted.cleaned.rg.reordered.deduped.bai"
+        "data/{sample,[A-Z0-9]*}.converted.sorted.cleaned.rg.reordered.dedup.bai"
     shell:
         "gatk BuildBamIndex --INPUT {input}"
 
 
 rule call_peaks:
     input:
-        bam="data/{sample}.converted.sorted.cleaned.rg.reordered.deduped.bam",
-        bai="data/{sample}.converted.sorted.cleaned.rg.reordered.deduped.bai"
+        bam="data/{sample}.converted.sorted.cleaned.rg.reordered.dedup.bam",
+        bai="data/{sample}.converted.sorted.cleaned.rg.reordered.dedup.bai"
     output:
-        "data/{sample,[A-Z0-9]*}.converted.sorted.cleaned.rg.reordered.deduped_peaks.narrowPeak"
+        "data/{sample,[A-Z0-9]*}.converted.sorted.cleaned.rg.reordered.dedup_peaks.narrowPeak"
     shell:
         "echo macs2 callpeak --nomodel -g 8.1e8 -f BAM -q 1e-05 -t {input.bam} --outdir ./data --name $(basename {output} _peaks.narrowPeak)"
 

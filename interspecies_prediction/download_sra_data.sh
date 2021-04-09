@@ -84,21 +84,45 @@ if [ $? != 0 ]; then
     echo 'Failed snakemake!'
     exit 1
 fi
-if [ ! -e 'data/oryLat2_prediction.labels.h5' ]; then
+if [ ! -e 'distinct_features.txt' ]; then
+    cut -f1 -d, interspecies_info.csv | sort | uniq | tr -d '\"' | tail -n+2 >distinct_features.txt
+    if [ $? != 0 ]; then
+        echo 'Failed to create distinct features for oryLat2.'
+        exit 1
+    fi
+fi
+if [ ! -e 'data/sorted_data.all.bed.gz' ]; then
+    cat 'distinct_features.txt' | \
+    while read -r ACCESSION; do
+        cat 'data/'"${ACCESSION}"'.cleaned.rg.reorder.dedup_peaks.narrowPeak' | \
+            cut -f1,2,3 | \
+            awk -v ACC="${ACCESSION}" '{ print $1 "\t" $2 "\t" $3 "\t" ACC }'
+    done | sort -k1V -k2n -k3n >'data/sorted_data.all.bed'
+    if [ $? != 0 ]; then
+        echo 'Failed to create data.'
+        exit 1
+    fi
+    bgzip 'data/sorted_data.all.bed'
+    if [ $? != 0 ]; then
+        echo 'Failed to compress sorted data'
+        exit 1
+    fi
+fi
+if [ ! -e 'data/sorted_data.all.bed.gz.tbi' ]; then
+    tabix -p bed 'data/sorted_data.all.bed.gz'
+    if [ $? != 0 ]; then
+        echo 'Failed to index sorted data with tabix.'
+        exit 1
+    fi
+fi
+if [ ! -e 'outputs/oryLat2_prediction.labels.h5' ]; then
     python 'get_cross_species_labels.py' \
-        --feature-file 'oryLat2_distinct_features.txt' \
+        --feature-file 'distinct_features.txt' \
         --interval-file 'data/sorted_data.all.bed.gz' \
         --query-file 'data/oryLat2_prediction.bed' \
         --output-file 'data/oryLat2_prediction.labels.h5'
     if [ $? != 0 ]; then
         echo 'Failed to generate labels for oryLat2'
-        exit 1
-    fi
-fi
-if [ ! -e 'distinct_features.txt' ]; then
-    cut -f1 -d, interspecies_info.csv | sort | uniq | tr -d '\"' | tail -n+2 >distinct_features.txt
-    if [ $? != 0 ]; then
-        echo 'Failed to create distinct features for oryLat2.'
         exit 1
     fi
 fi
