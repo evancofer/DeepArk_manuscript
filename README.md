@@ -15,6 +15,7 @@
 9. [Reproducing the MPRA _in silico_ saturated mutagenesis predictions](#mpra)
 10. [Reproducing the variant effect predictions for the _T48_ enhancer alleles](#t48)
 11. [Reproducing the DCC analysis](#dcc)
+12. [Reproducing the interspecies prediction evaluation](#interspecies)
 
 
 ## <a name="what_is_deepark"></a>What is DeepArk?
@@ -169,4 +170,15 @@ cd DCC
 ```
 
 
-##
+## <a name="interspecies"></a>Reproducing the interspecies prediction evaluation
+You can reproduce the interspecies prediction in _O. latipes_ with the DeepArk model for _D. rerio_.
+Please note that this is extremely time consuming, as a significant amount of data has to be downloaded from SRA and subsequently processed.
+Unfortunately, there is no quick way to generate supplemental figure S9 without re-running the predictions for _pdia4_.
+However, supplemental figure S8 can be reproduced without having to repeat any predictions.
+
+```
+cd interspecies_prediction
+./download_sra_data.sh
+./oryLat2_prediction.sh
+./pdia4_prediction.sh
+```
