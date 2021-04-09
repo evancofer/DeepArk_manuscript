@@ -7,7 +7,10 @@ channels:
   - conda-forge
 dependencies:
   - _libgcc_mutex=0.1=main
+  - bedtools=2.29.2=hc088bd4_0
   - blas=1.0=mkl
+  - bwa=0.7.17=hed695b0_7
+  - bz2file=0.98=py36h06a4308_1
   - bzip2=1.0.8=h7b6447c_0
   - ca-certificates=2021.1.19=h06a4308_1
   - certifi=2020.12.5=py36h06a4308_0
@@ -15,11 +18,17 @@ dependencies:
   - click=7.0=py36_0
   - cudatoolkit=10.0.130=0
   - curl=7.61.0=h84994c4_0
+  - cutadapt=2.6=py36h516909a_0
   - cython=0.29.13=py36he6710b0_0
+  - dnaio=0.3=py36h14c3975_1
   - docopt=0.6.2=py36h06a4308_0
   - expat=2.2.10=he6710b0_2
+  - fastqc=0.11.8=0
   - freetype=2.9.1=h8a8886c_1
+  - gatk4=4.2.0.0=hdfd78af_1
   - ghostscript=9.18=1
+  - hdf5=1.10.5=nompi_h3c11f04_1104
+  - hisat2=2.2.1=he1b5a44_2
   - htslib=1.9=h4da6232_3
   - icu=64.2=he1b5a44_1
   - intel-openmp=2019.4=243
@@ -46,20 +55,26 @@ dependencies:
   - mkl_random=1.0.2=py36h423224d_0
   - mpi=1.0=openmpi
   - mysql-connector-c=6.1.6=2
+  - ncbi-ngs-sdk=2.10.4=hdf6179e_0
   - ncurses=6.1=he6710b0_1
   - ninja=1.9.0=py36hfd86e86_0
   - numpy=1.16.5=py36h7e9f1db_0
   - numpy-base=1.16.5=py36hde5b4d6_0
   - olefile=0.46=py36_0
+  - openjdk=8.0.152=h7b6447c_3
   - openmpi=4.0.2=hb1b8bf9_1
   - openssl=1.0.2u=h7b6447c_0
+  - ossuuid=1.6.2=hf484d3e_1000
   - perl=5.26.2=h14c3975_0
   - perl-app-cpanminus=1.7044=pl526_1
   - perl-base=2.23=pl526_1
+  - perl-business-isbn=3.004=pl526_0
+  - perl-business-isbn-data=20140910.003=pl526_0
   - perl-carp=1.38=pl526_3
   - perl-cgi=4.44=pl526h14c3975_1
   - perl-common-sense=3.74=pl526_2
   - perl-constant=1.33=pl526_1
+  - perl-data-dumper=2.173=pl526_0
   - perl-dbi=1.642=pl526_0
   - perl-encode=2.88=pl526_1
   - perl-exporter=5.72=pl526_1
@@ -75,9 +90,12 @@ dependencies:
   - perl-json-xs=2.34=pl526h6bb024c_3
   - perl-log-log4perl=1.49=pl526_0
   - perl-math-cdf=0.1=pl526h14c3975_5
+  - perl-mime-base64=3.15=pl526_1
   - perl-parent=0.236=pl526_1
   - perl-scalar-list-utils=1.52=pl526h516909a_0
   - perl-types-serialiser=1.0=pl526_2
+  - perl-uri=1.76=pl526_0
+  - perl-xml-libxml=2.0132=pl526h7ec2d77_1
   - perl-xml-namespacesupport=1.12=pl526_0
   - perl-xml-parser=2.44=pl526h4e0c4b3_7
   - perl-xml-sax=1.02=pl526_0
@@ -86,7 +104,8 @@ dependencies:
   - perl-xml-simple=2.25=pl526_1
   - perl-xsloader=0.24=pl526_0
   - perl-yaml=1.29=pl526_0
-  - pillow=6.1.0=py36h34e0f95_0
+  - picard=2.18.17=0
+  - pigz=2.4=h84994c4_0
   - pip=19.2.2=py36_0
   - pycparser=2.19=py36_0
   - pytabix=0.1=py36hd181a71_0
@@ -98,33 +117,92 @@ dependencies:
   - setuptools=41.0.1=py36_0
   - six=1.12.0=py36_0
   - sqlite=3.29.0=h7b6447c_0
+  - sra-tools=2.10.9=pl526haddd2b5_0
   - tk=8.6.8=hbc83047_0
   - torchvision=0.4.0=py36_cu100
+  - trim-galore=0.6.6=hdfd78af_1
   - ucsc-liftover=377=h199ee4e_0
   - ucsc-twobittofa=377=h199ee4e_0
   - wheel=0.33.4=py36_0
+  - xopen=0.7.3=py_0
   - xz=5.2.4=h14c3975_4
   - yaml=0.2.5=h7b6447c_0
   - zlib=1.2.11=h7b6447c_3
   - zstd=1.3.7=h0b5b093_0
   - pip:
+    - macs2==2.2.7.1
+    - alabaster==0.7.12
+    - amply==0.1.4
+    - appdirs==1.4.4
+    - attrs==20.3.0
+    - babel==2.9.0
+    - bx-python==0.8.11
+    - chardet==4.0.0
+    - configargparse==1.4
     - cycler==0.10.0
+    - datrie==0.8.2
+    - decorator==5.0.5
+    - deeptools==3.5.1
+    - deeptoolsintervals==0.1.9
+    - docutils==0.17
+    - filelock==3.0.12
+    - gitdb==4.0.7
+    - gitpython==3.1.14
     - h5py==2.10.0
+    - idna==2.10
+    - imagesize==1.2.0
+    - importlib-metadata==3.10.0
+    - ipython-genutils==0.2.0
+    - jinja2==2.11.3
     - joblib==0.13.2
+    - jsonschema==3.2.0
+    - jupyter-core==4.7.1
     - kiwisolver==1.1.0
-    - matplotlib==3.1.1
+    - markupsafe==1.1.1
+    - matplotlib==3.3.4
+    - nbformat==5.1.3
+    - numpydoc==1.1.0
+    - packaging==20.9
     - pandas==0.25.1
     - patsy==0.5.1
-    - plotly==4.1.1
+    - pillow==8.2.0
+    - plotly==4.14.3
+    - psutil==5.8.0
+    - pulp==2.4
+    - py2bit==0.3.0
+    - pybigwig==0.3.18
     - pyfaidx==0.5.5.2
+    - pygments==2.8.1
     - pyparsing==2.4.2
+    - pyrsistent==0.17.3
+    - pysam==0.16.0.1
     - python-dateutil==2.8.0
     - pytz==2019.2
     - pyyaml==5.1.2
+    - ratelimiter==1.2.0.post0
+    - requests==2.25.1
     - retrying==1.3.3
     - scikit-learn==0.21.3
     - scipy==1.3.1
     - seaborn==0.9.0
     - selene-sdk==0.4.8
+    - smart-open==5.0.0
+    - smmap==4.0.0
+    - snakemake==6.1.1
+    - snowballstemmer==2.1.0
+    - sphinx==3.5.3
+    - sphinxcontrib-applehelp==1.0.2
+    - sphinxcontrib-devhelp==1.0.2
+    - sphinxcontrib-htmlhelp==1.0.3
+    - sphinxcontrib-jsmath==1.0.1
+    - sphinxcontrib-qthelp==1.0.3
+    - sphinxcontrib-serializinghtml==1.1.4
     - statsmodels==0.10.1
+    - toposort==1.6
+    - traitlets==4.3.3
+    - typing-extensions==3.7.4.3
+    - urllib3==1.26.4
+    - wrapt==1.12.1
+    - zipp==3.4.1
+prefix: /data/home/ecofer/anaconda3/envs/DeepArk_manuscript
 
